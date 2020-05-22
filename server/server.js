@@ -1,5 +1,11 @@
 var http = require('http');
 
+var data = {
+  id: 1,
+  name: 'ryosuke',
+  age: '24'
+};
+
 var server = http.createServer(function (req, res) {
   console.log(`headers: ${JSON.stringify(req.headers)}`);
   console.log(`method: ${req.method}`);
@@ -7,7 +13,7 @@ var server = http.createServer(function (req, res) {
 
   // response
   res.writeHeader(200, {'Content-Type': 'application/json'});
-  res.end(JSON.stringify({ 'id': 1}));
+  res.end(JSON.stringify(data, undefined, 1));
 });
 
 server.listen({
