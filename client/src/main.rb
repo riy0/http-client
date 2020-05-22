@@ -4,7 +4,7 @@ require 'uri'
 # Method: get, post.
 class HttpClient
   def initialize(input)
-    @url = input[0] # 'https://jsonplaceholder.typicode.com/todos'
+    @url = input[0]
     @method = input[1]
     @parameter = input[2]
     @thread_number = input[3]
@@ -12,20 +12,27 @@ class HttpClient
     @response = input[5]
   end
 
-  def get
-    print 'get called'
+  # get request
+  def request
+    puts 'get called'
+    uri = URI.parse(@url)
+    response = Net::HTTP.get_response(uri)
+
+    puts "[url]: #{uri}"
+    puts "[status]: #{response.code}"
+    puts "[body]:  #{response.body}"
   end
 
-  def post
-    print 'get called'
+  def post_request
+    print 'post called'
   end
 
   def execute
     case @method
     when 'get', 'GET', 'g'
-      get
+      request
     when 'post', 'POST', 'p'
-      get
+      post_request
     else
       usage
     end
