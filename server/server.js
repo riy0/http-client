@@ -1,10 +1,12 @@
 var http = require('http');
 
-var data = {
+var = {
   id: 1,
   name: 'ryosuke',
   age: '24'
 };
+
+var data = 1
 
 var server = http.createServer(function (req, res) {
   console.log(`headers: ${JSON.stringify(req.headers)}`);
