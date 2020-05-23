@@ -11,15 +11,6 @@ class HttpClient
     @response = input[5]
   end
 
-  # get
-  def request
-    uri = URI.parse(@url)
-    uri.query = URI.encode_www_form(@parameter) if @parameter.is_a?(Hash)
-    res = Net::HTTP.get_response(uri)
-
-    res.body if res.is_a?(Net::HTTPSuccess)
-  end
-
   def execute
     case @method
     when 'get', 'GET', 'g'
@@ -28,6 +19,17 @@ class HttpClient
       puts 'No method'
       usage
     end
+  end
+
+  # get
+  def request
+    puts @parameter.class
+
+    uri = URI.parse(@url)
+    uri.query = URI.encode_www_form(@parameter) if @parameter.is_a?(Hash)
+    res = Net::HTTP.get_response(uri)
+
+    show_response(res)
   end
 
   private
@@ -51,9 +53,7 @@ class HttpClient
     puts result.body if @response == 'body'
 
     # [todo] correspond to show the number of each status code
-    if @response == 'total'
-      result.code
-    end
+    puts result.code if @response == 'total'
   end
 
   # [todo] write usage  & validation method
