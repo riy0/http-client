@@ -1,58 +1,79 @@
 require 'net/http'
-require 'uri'
 
 # Method: get, post.
 class HttpClient
   def initialize(input)
     @url = input[0]
     @method = input[1]
-    @parameter = input[2]
+    @parameter = format_parameter(input[2])
     @thread_number = input[3]
     @times = input[4]
     @response = input[5]
   end
 
-  # get request
+  # get
   def request
-    puts 'get called'
     uri = URI.parse(@url)
-    response = Net::HTTP.get_response(uri)
+    uri.query = URI.encode_www_form(@parameter) if @parameter.is_a?(Hash)
+    res = Net::HTTP.get_response(uri)
 
-    puts "[url]: #{uri}"
-    puts "[status]: #{response.code}"
-    puts "[body]:  #{response.body}"
-  end
-
-  def post_request
-    print 'post called'
+    res.body if res.is_a?(Net::HTTPSuccess)
   end
 
   def execute
     case @method
     when 'get', 'GET', 'g'
       request
-    when 'post', 'POST', 'p'
-      post_request
     else
+      puts 'No method'
       usage
     end
   end
 
   private
 
-  # [todo] write usage  & validation method
-  def validate_arguments
-    print 'validate input'
+  # format parameter to hash class.
+  def format_parameter(parameters)
+    return unless parameters.include?('=')
+
+    formatted_params = {}
+    parameters.each_line('&&') do |param|
+      param.delete!('&&')
+      key, value = param.split('=')
+      value = value.to_i if /^[+-]?[0-9]+$/ =~ value
+
+      formatted_params[key.intern] = value
+    end
+    formatted_params
   end
 
-  def usage
-    print 'usage'
+  def show_response(result)
+    puts result.body if @response == 'body'
+
+    # [todo] correspond to show the number of each status code
+    if @response == 'total'
+      result.code
+    end
+  end
+
+  # [todo] write usage  & validation method
+  def validate_arguments
+    puts 'validate input'
   end
 end
 
+def usage
+  print 'コマンドライン引数が正しくありません'
+end
+
 def main
+  if ARGV.size != 6
+    usage
+    exit
+  end
+
   client = HttpClient.new(ARGV)
-  client.execute
+  puts client.execute
 end
 
 if __FILE__ == $0
