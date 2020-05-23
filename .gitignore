@@ -1,1 +1,4 @@
-server/package-lock.json
+server/
+
+client/Gemfile.lock
+client/spec/examples.txt
