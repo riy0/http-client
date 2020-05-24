@@ -23,8 +23,6 @@ class HttpClient
 
   # get
   def request
-    puts @parameter.class
-
     uri = URI.parse(@url)
     uri.query = URI.encode_www_form(@parameter) if @parameter.is_a?(Hash)
     res = Net::HTTP.get_response(uri)
@@ -50,13 +48,13 @@ class HttpClient
   end
 
   def show_response(result)
-    puts result.body if @response == 'body'
+    result.body if @response == 'body'
 
     # [todo] correspond to show the number of each status code
-    puts result.code if @response == 'total'
+    result.code if @response == 'status'
   end
 
-  # [todo] write usage  & validation method
+  # [todo] validation method
   def validate_arguments
     puts 'validate input'
   end
@@ -73,9 +71,10 @@ def main
   end
 
   client = HttpClient.new(ARGV)
-  puts client.execute
+  client.execute
 end
 
 if __FILE__ == $0
   main
 end
+
