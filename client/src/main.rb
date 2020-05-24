@@ -40,10 +40,6 @@ class HttpClient
     formatted_params
   end
 
-  def execute_request(uri)
-    # use for refactor parallelize_request method
-  end
-
   def parallelize_request(uri)
     threads = []
     results = []
@@ -55,7 +51,8 @@ class HttpClient
 
         threads << Thread.new do
           res = Net::HTTP.get_response(uri)
-          results << res.code
+          results << res if @response == 'body'
+          results << res.code if @response == 'status'
         end
         count += 1
       end
@@ -86,23 +83,23 @@ class HttpClient
   end
 
   def show_total_status(results)
-    status_codes = results.uniq
     messages = []
+    status_codes = results.uniq
 
     status_codes.each do |status|
       total = results.count(status)
       messages.push("#{status} : #{total}")
     end
-
     messages
   end
 end
 
-def usage
+# exit with display usage
+def my_exit
   print 'コマンドライン引数が正しくありません'
+  exit
 end
 
-# [todo] validation method
 def validate_arguments
   return unless ARGV.size == 6
   return unless ARGV[5] == 'body' || ARGV[5] == 'status'
@@ -115,10 +112,7 @@ def validate_arguments
 end
 
 if __FILE__ == $0
-  if validate_arguments.nil?
-    usage
-    exit
-  end
+  my_exit if validate_arguments.nil?
 
   client = HttpClient.new(ARGV)
 
