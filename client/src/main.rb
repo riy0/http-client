@@ -9,7 +9,7 @@ class HttpClient
     @method = input[1]
     @parameter = format_parameter(input[2])
     @thread_number = input[3].to_i
-    @times = input[4]
+    @times = input[4].to_i
     @response = input[5]
   end
 
@@ -20,25 +20,9 @@ class HttpClient
 
     results = parallelize_request(uri)
 
-    show_response(results)
+    display_results(results)
   end
 
-  # paralleization with thread
-  def parallelize_request(uri)
-    threads = []
-    results = []
-    @thread_number.times do
-      threads << Thread.new do
-        res = Net::HTTP.get_response(uri)
-        results.push(res.body) if @response == 'body'
-        results.push(res.code) if @response == 'status'
-      end
-    end
-
-    threads.each(&:join)
-    results
-  end
- 
   private
 
   # format parameter to hash class.
@@ -56,19 +40,52 @@ class HttpClient
     formatted_params
   end
 
-  def show_response(results)
-    if @response == 'status'
-      status_codes = results.uniq
-
-      status_codes.each_index do |index|
-        total = results.count(status_codes[index])
-        puts "#{status_codes[index]} : #{total}"
+  # paralleization with thread
+  def parallelize_request(uri)
+    threads = []
+    results = []
+    @thread_number.times do
+      threads << Thread.new do
+        res = Net::HTTP.get_response(uri)
+        results.push(res) if @response == 'body'
+        results.push(res.code) if @response == 'status'
       end
     end
 
-    if @response == 'body'
-      puts results[0]
+    threads.each(&:join)
+    results
+  end
+ 
+  def display_results(results)
+    puts "run #{@method} request"
+    puts "url: #{@url}"
+    puts "thread: #{@thread_number}, reputation: #{@times}"
+
+    puts show_response_body(results) if @response == 'body'
+    puts show_total_status(results) if @response == 'status'
+  end
+
+  def show_response_body(results)
+    results.each do |result|
+      if result.is_a?(Net::HTTPSuccess)
+        body = result.body
+        return body
+      end
     end
+
+    "All requests has failed, can't get body"
+  end
+
+  def show_total_status(results)
+    status_codes = results.uniq
+    messages = []
+
+    status_codes.each do |status|
+      total = results.count(status)
+      messages.push("#{status} : #{total}")
+    end
+
+    messages
   end
 end
 
