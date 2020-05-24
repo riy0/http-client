@@ -63,12 +63,12 @@ class HttpClient
   end
 
   def display_results(results)
-    puts "run #{@method} request"
-    puts "url: #{@url}"
-    puts "thread: #{@thread_number}, reputation: #{@times}"
+    # puts "run #{@method} request"
+    # puts "url: #{@url}"
+    # puts "thread: #{@thread_number}, reputation: #{@times}"
 
-    puts show_response_body(results) if @response == 'body'
-    puts show_total_status(results) if @response == 'status'
+    show_response_body(results) if @response == 'body'
+    show_total_status(results) if @response == 'status'
   end
 
   def show_response_body(results)
@@ -88,7 +88,8 @@ class HttpClient
 
     status_codes.each do |status|
       total = results.count(status)
-      messages.push("#{status} : #{total}")
+      # messages.push("#{status} : #{total}")
+      messages.push(status, total)
     end
     messages
   end
