@@ -8,8 +8,8 @@ class HttpClient
     @url = input[0]
     @method = input[1]
     @parameter = format_parameter(input[2])
-    @thread_number = input[3].to_i
-    @times = input[4].to_i
+    @thread_number = input[3]
+    @times = input[4]
     @response = input[5]
   end
 
@@ -19,7 +19,7 @@ class HttpClient
     uri.query = URI.encode_www_form(@parameter) if @parameter.is_a?(Hash)
 
     results = parallelize_request(uri)
-
+    # results = execute_request(uri)
     display_results(results)
   end
 
@@ -40,22 +40,31 @@ class HttpClient
     formatted_params
   end
 
-  # paralleization with thread
+  def execute_request(uri)
+    # use for refactor parallelize_request method
+  end
+
   def parallelize_request(uri)
     threads = []
     results = []
-    @thread_number.times do
-      threads << Thread.new do
-        res = Net::HTTP.get_response(uri)
-        results.push(res) if @response == 'body'
-        results.push(res.code) if @response == 'status'
-      end
-    end
+    count = 0
 
-    threads.each(&:join)
+    until count == @times 
+      @thread_number.times do 
+        break if count == @times
+
+        threads << Thread.new do
+          res = Net::HTTP.get_response(uri)
+          results << res.code
+        end
+        count += 1
+      end
+
+      threads.each(&:join)
+    end
     results
   end
- 
+
   def display_results(results)
     puts "run #{@method} request"
     puts "url: #{@url}"
@@ -96,8 +105,13 @@ end
 # [todo] validation method
 def validate_arguments
   return unless ARGV.size == 6
+  return unless ARGV[5] == 'body' || ARGV[5] == 'status'
 
-  'validate input'
+  thread_number = ARGV[3].to_i
+  times = ARGV[4].to_i
+  thread_number = times if thread_number > times
+  ARGV[3] = thread_number
+  ARGV[4] = times
 end
 
 if __FILE__ == $0
