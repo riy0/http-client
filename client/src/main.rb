@@ -19,7 +19,6 @@ class HttpClient
     uri.query = URI.encode_www_form(@parameter) if @parameter.is_a?(Hash)
 
     results = parallelize_request(uri)
-    # results = execute_request(uri)
     display_results(results)
   end
 
@@ -71,15 +70,16 @@ class HttpClient
     show_total_status(results) if @response == 'status'
   end
 
+  # if get response body, return it
   def show_response_body(results)
     results.each do |result|
-      if result.is_a?(Net::HTTPSuccess)
-        body = result.body
-        return body
-      end
+      next unless result.is_a?(Net::HTTPSuccess)
+      next if result.body == '[]'
+
+      return result.body
     end
 
-    "All requests has failed, can't get body"
+    'unmatched parameter value'
   end
 
   def show_total_status(results)
