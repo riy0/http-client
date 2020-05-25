@@ -2,8 +2,6 @@ require 'net/http'
 
 # Method: get, post.
 class HTTPClient
-  attr_reader :method
-
   def initialize(url, method, parameter, thread_number, repeat_count, response)
     @url = url
     @method = method
@@ -75,7 +73,7 @@ class HTTPClient
     # puts "thread: #{@thread_number}, iteration: #{@iteration_count} times"
 
     check_response_body(results) if @response == 'body'
-    puts count_each_status(results) if @response == 'status'
+    count_each_status(results) if @response == 'status'
   end
 
   # if get response body, return it
