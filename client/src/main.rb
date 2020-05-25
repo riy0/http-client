@@ -122,6 +122,5 @@ if __FILE__ == $0
     client.request
   else
     my_exit
-    exit
   end
 end
