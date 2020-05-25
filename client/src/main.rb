@@ -121,7 +121,7 @@ if __FILE__ == $0
   when 'get', 'GET', 'g'
     client.request
   else
-    usage
+    my_exit
     exit
   end
 end
