@@ -15,6 +15,8 @@ class HTTPClient
     case @method
     when 'get', 'GET', 'g'
       http_get_request
+    when 'delete', 'd'
+      delete_request
     else
       my_exit
     end
@@ -27,6 +29,19 @@ class HTTPClient
 
     results = parallelize_requests(uri)
     display_results(results)
+  end
+
+  def delete_request
+    uri = URI.parse(@url)
+    request = Net::HTTP::Delete.new(uri)
+
+    req_options = { use_ssl: uri.scheme == 'https' }
+
+    response = Net::HTTP.start(uri.hostname, uri.port, req_options) do |http|
+      http.request(request)
+    end
+    puts response.body if @response == 'body'
+    puts response.code if @response == 'status'
   end
 
   private
@@ -101,7 +116,7 @@ end
 
 def valid_input?
   return unless ARGV.size == 6
-  return unless ARGV[2].include?('=')
+  return unless ARGV[2].include?('=') || ARGV[2].empty?
   return unless ARGV[3] =~ /\A[0-9]+\z/
   return unless ARGV[4] =~ /\A[0-9]+\z/
   return unless ARGV[5] == 'body' || ARGV[5] == 'status'
