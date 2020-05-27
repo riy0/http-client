@@ -65,7 +65,7 @@ class HTTPClient
     # puts "url: #{@url}"
     # puts "thread: #{@thread_number}, iteration: #{@iteration_count} times"
 
-    puts check_response_body(results) if @response == 'body'
+    check_response_body(results) if @response == 'body'
     count_each_status(results) if @response == 'status'
   end
 
