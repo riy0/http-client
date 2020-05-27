@@ -13,15 +13,15 @@ class HTTPClient
 
   def execute
     case @method
-    when 'get', 'GET', 'g'
-      http_get_request
+    when 'get', 'g', 'post', 'p'
+      http_request
     else
       my_exit
     end
   end
 
-  # get
-  def http_get_request
+  # get & post
+  def http_request
     uri = URI.parse(@url)
     uri.query = URI.encode_www_form(@parameter) if @parameter.is_a?(Hash)
 
@@ -48,7 +48,8 @@ class HTTPClient
     @repeat_count.times do
       @thread_number.times do 
         threads << Thread.new do
-          res = Net::HTTP.get_response(uri)
+          res = Net::HTTP.get_response(uri) if @method == 'get'
+          res = Net::HTTP.post_form(uri, @parameter) if @method == 'post'
           responses << res if @response == 'body'
           responses << res.code if @response == 'status'
         end
@@ -64,7 +65,7 @@ class HTTPClient
     # puts "url: #{@url}"
     # puts "thread: #{@thread_number}, iteration: #{@iteration_count} times"
 
-    check_response_body(results) if @response == 'body'
+    puts check_response_body(results) if @response == 'body'
     count_each_status(results) if @response == 'status'
   end
 
