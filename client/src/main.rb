@@ -5,7 +5,7 @@ class HTTPClient
   def initialize(url, method, parameter, thread_number, repeat_count, response)
     @url = url
     @method = method
-    @parameter = format_parameter_to_hash(parameter)
+    @parameter = parameter_to_hash(parameter)
     @thread_number = thread_number.to_i
     @repeat_count = repeat_count.to_i
     @response = response
@@ -31,35 +31,27 @@ class HTTPClient
 
   private
 
-  def format_parameter_to_hash(parameters)
-    return unless parameters.include?('=')
-
-    formatted_params = {}
-    parameters.each_line('&&') do |param|
-      param.delete!('&&')
-      key, value = param.split('=')
+  def parameter_to_hash(parameter)
+    parameter = parameter.split(/[=&]/)
+    formatted_params = parameter.each_slice(2).map do |key, value|
       value = value.to_i if /^[+-]?[0-9]+$/ =~ value
-
-      formatted_params[key.intern] = value
+      [key.to_sym, value]
     end
-    formatted_params
+
+    formatted_params.to_h
   end
 
   def parallelize_requests(uri)
     threads = []
     responses = []
-    count = 0
 
-    until count == @repeat_count
+    @repeat_count.times do
       @thread_number.times do 
-        break if count == @repeat_count
-
         threads << Thread.new do
           res = Net::HTTP.get_response(uri)
           responses << res if @response == 'body'
           responses << res.code if @response == 'status'
         end
-        count += 1
       end
 
       threads.each(&:join)
@@ -107,17 +99,19 @@ def my_exit
   exit
 end
 
+def valid_input?
+  return unless ARGV.size == 6
+  return unless ARGV[2].include?('=')
+  return unless ARGV[3] =~ /\A[0-9]+\z/
+  return unless ARGV[4] =~ /\A[0-9]+\z/
+  return unless ARGV[5] == 'body' || ARGV[5] == 'status'
+
+  true
+end
+
 if __FILE__ == $0
-  my_exit unless ARGV.size == 6
-  my_exit unless ARGV[5] == 'body' || ARGV[5] == 'status'
+  my_exit unless valid_input?
 
-  url = ARGV[0]
-  method = ARGV[1]
-  parameter = ARGV[2]
-  thread_number = ARGV[3]
-  repeat_count = ARGV[4]
-  response = ARGV[5]
-
-  client = HTTPClient.new(url, method, parameter, thread_number, repeat_count, response)
+  client = HTTPClient.new(ARGV[0], ARGV[1], ARGV[2], ARGV[3], ARGV[4], ARGV[5])
   client.execute
 end
