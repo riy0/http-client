@@ -87,12 +87,12 @@ class HTTPClient
   end
 
   def display_results(results)
-    puts "run #{@method} request"
-    puts "url: #{@url}"
-    puts "thread: #{@thread_number}, iteration: #{@repeat_count} times"
+    # "run #{@method} request"
+    # "url: #{@url}"
+    # "thread: #{@thread_number}, iteration: #{@repeat_count} times"
 
-    puts check_response_body(results) if @response == 'body'
-    puts count_each_status(results) if @response == 'status'
+    check_response_body(results) if @response == 'body'
+    count_each_status(results) if @response == 'status'
   end
 
   # if get response body, return it
