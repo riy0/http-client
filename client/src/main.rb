@@ -3,7 +3,7 @@ require 'net/http'
 # Method: get, post.
 class HTTPClient
   def initialize(url, method, parameter, thread_number, repeat_count, response)
-    @url = url
+    @uri = URI.parse(url)
     @method = method
     @parameter = parameter_to_hash(parameter)
     @thread_number = thread_number.to_i
@@ -13,9 +13,10 @@ class HTTPClient
 
   def execute
     case @method
-      http-client-post
-    when 'get', 'g', 'post', 'p'
-      http_request
+    when 'get', 'g'
+      http_get_request
+    when 'post', 'p'
+      post_request
     when 'delete', 'd'
       delete_request
     else
@@ -23,22 +24,28 @@ class HTTPClient
     end
   end
 
-  # get & post
-  def http_request
-    uri = URI.parse(@url)
-    uri.query = URI.encode_www_form(@parameter) if @parameter.is_a?(Hash)
+  def http_get_request
+    @uri.query = URI.encode_www_form(@parameter) if @parameter.is_a?(Hash)
+    request = Net::HTTP::Get.new(@uri.request_uri)
 
-    results = parallelize_requests(uri)
+    results = parallelize_requests(request)
+    display_results(results)
+  end
+
+  def post_request
+    request = Net::HTTP::Post.new(@uri)
+    request.set_form_data(@parameter)
+
+    results = parallelize_requests(request)
     display_results(results)
   end
 
   def delete_request
-    uri = URI.parse(@url)
-    request = Net::HTTP::Delete.new(uri)
+    request = Net::HTTP::Delete.new(@uri)
 
-    req_options = { use_ssl: uri.scheme == 'https' }
+    req_options = { use_ssl: @uri.scheme == 'https' }
 
-    response = Net::HTTP.start(uri.hostname, uri.port, req_options) do |http|
+    response = Net::HTTP.start(@uri.hostname, @uri.port, req_options) do |http|
       http.request(request)
     end
     puts response.body if @response == 'body'
@@ -57,15 +64,16 @@ class HTTPClient
     formatted_params.to_h
   end
 
-  def parallelize_requests(uri)
+  def parallelize_requests(request)
     threads = []
     responses = []
 
     @repeat_count.times do
       @thread_number.times do 
         threads << Thread.new do
-          res = Net::HTTP.get_response(uri) if @method == 'get'
-          res = Net::HTTP.post_form(uri, @parameter) if @method == 'post'
+          res = Net::HTTP.start(uri.hostname, uri.port) do |http|
+            http.request(request)
+          end
           responses << res if @response == 'body'
           responses << res.code if @response == 'status'
         end
