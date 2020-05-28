@@ -9,6 +9,8 @@ class HTTPClient
     @thread_number = thread_number.to_i
     @repeat_count = repeat_count.to_i
     @response = response
+
+    @req_options = { use_ssl: @uri.scheme == 'https' }
   end
 
   def execute
@@ -43,9 +45,8 @@ class HTTPClient
   def delete_request
     request = Net::HTTP::Delete.new(@uri)
 
-    req_options = { use_ssl: @uri.scheme == 'https' }
 
-    response = Net::HTTP.start(@uri.hostname, @uri.port, req_options) do |http|
+    response = Net::HTTP.start(@uri.hostname, @uri.port, @req_options) do |http|
       http.request(request)
     end
     puts response.body if @response == 'body'
@@ -71,7 +72,7 @@ class HTTPClient
     @repeat_count.times do
       @thread_number.times do 
         threads << Thread.new do
-          res = Net::HTTP.start(uri.hostname, uri.port) do |http|
+          res = Net::HTTP.start(@uri.hostname, @uri.port, @req_options) do |http|
             http.request(request)
           end
           responses << res if @response == 'body'
@@ -89,8 +90,8 @@ class HTTPClient
     # puts "url: #{@url}"
     # puts "thread: #{@thread_number}, iteration: #{@iteration_count} times"
 
-    check_response_body(results) if @response == 'body'
-    count_each_status(results) if @response == 'status'
+    puts check_response_body(results) if @response == 'body'
+    puts count_each_status(results) if @response == 'status'
   end
 
   # if get response body, return it
