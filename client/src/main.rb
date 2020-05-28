@@ -3,18 +3,22 @@ require 'net/http'
 # Method: get, post.
 class HTTPClient
   def initialize(url, method, parameter, thread_number, repeat_count, response)
-    @url = url
+    @uri = URI.parse(url)
     @method = method
     @parameter = parameter_to_hash(parameter)
     @thread_number = thread_number.to_i
     @repeat_count = repeat_count.to_i
     @response = response
+
+    @req_options = { use_ssl: @uri.scheme == 'https' }
   end
 
-  def execute
+  def run
     case @method
-    when 'get', 'GET', 'g'
+    when 'get', 'g'
       http_get_request
+    when 'post', 'p'
+      post_request
     when 'delete', 'd'
       delete_request
     else
@@ -22,26 +26,27 @@ class HTTPClient
     end
   end
 
-  # get
   def http_get_request
-    uri = URI.parse(@url)
-    uri.query = URI.encode_www_form(@parameter) if @parameter.is_a?(Hash)
+    @uri.query = URI.encode_www_form(@parameter) if @parameter.is_a?(Hash)
+    request = Net::HTTP::Get.new(@uri.request_uri)
 
-    results = parallelize_requests(uri)
+    results = parallelize_requests(request)
+    display_results(results)
+  end
+
+  def post_request
+    request = Net::HTTP::Post.new(@uri)
+    request.set_form_data(@parameter)
+
+    results = parallelize_requests(request)
     display_results(results)
   end
 
   def delete_request
-    uri = URI.parse(@url)
-    request = Net::HTTP::Delete.new(uri)
+    request = Net::HTTP::Delete.new(@uri)
 
-    req_options = { use_ssl: uri.scheme == 'https' }
-
-    response = Net::HTTP.start(uri.hostname, uri.port, req_options) do |http|
-      http.request(request)
-    end
-    puts response.body if @response == 'body'
-    puts response.code if @response == 'status'
+    result = execute_request(request)
+    display_results([result])
   end
 
   private
@@ -56,16 +61,14 @@ class HTTPClient
     formatted_params.to_h
   end
 
-  def parallelize_requests(uri)
+  def parallelize_requests(request)
     threads = []
     responses = []
 
     @repeat_count.times do
       @thread_number.times do 
         threads << Thread.new do
-          res = Net::HTTP.get_response(uri)
-          responses << res if @response == 'body'
-          responses << res.code if @response == 'status'
+          responses << execute_request(request)
         end
       end
 
@@ -74,10 +77,19 @@ class HTTPClient
     responses
   end
 
+  def execute_request(request)
+    result = Net::HTTP.start(@uri.hostname, @uri.port, @req_options) do |http|
+      http.request(request)
+    end
+
+    result = result.code if @response == 'status'
+    result
+  end
+
   def display_results(results)
-    # puts "run #{@method} request"
-    # puts "url: #{@url}"
-    # puts "thread: #{@thread_number}, iteration: #{@iteration_count} times"
+    # "run #{@method} request"
+    # "url: #{@url}"
+    # "thread: #{@thread_number}, iteration: #{@repeat_count} times"
 
     check_response_body(results) if @response == 'body'
     count_each_status(results) if @response == 'status'
@@ -101,8 +113,7 @@ class HTTPClient
 
     status_codes.each do |status|
       total = results.count(status)
-      # messages.push("#{status} : #{total}")
-      messages.push(status, total)
+      messages.push("#{status} : #{total}")
     end
     messages
   end
@@ -128,5 +139,5 @@ if __FILE__ == $0
   my_exit unless valid_input?
 
   client = HTTPClient.new(ARGV[0], ARGV[1], ARGV[2], ARGV[3], ARGV[4], ARGV[5])
-  client.execute
+  client.run
 end
