@@ -45,11 +45,8 @@ class HTTPClient
   def delete_request
     request = Net::HTTP::Delete.new(@uri)
 
-    response = Net::HTTP.start(@uri.hostname, @uri.port, @req_options) do |http|
-      http.request(request)
-    end
-    puts response.body if @response == 'body'
-    puts response.code if @response == 'status'
+    result = execute_request(request)
+    display_results([result])
   end
 
   private
@@ -90,9 +87,9 @@ class HTTPClient
   end
 
   def display_results(results)
-    # puts "run #{@method} request"
-    # puts "url: #{@url}"
-    # puts "thread: #{@thread_number}, iteration: #{@iteration_count} times"
+    puts "run #{@method} request"
+    puts "url: #{@url}"
+    puts "thread: #{@thread_number}, iteration: #{@repeat_count} times"
 
     puts check_response_body(results) if @response == 'body'
     puts count_each_status(results) if @response == 'status'
@@ -116,8 +113,7 @@ class HTTPClient
 
     status_codes.each do |status|
       total = results.count(status)
-      # messages.push("#{status} : #{total}")
-      messages.push(status, total)
+      messages.push("#{status} : #{total}")
     end
     messages
   end
