@@ -13,7 +13,7 @@ class HTTPClient
     @req_options = { use_ssl: @uri.scheme == 'https' }
   end
 
-  def execute
+  def run
     case @method
     when 'get', 'g'
       http_get_request
@@ -45,7 +45,6 @@ class HTTPClient
   def delete_request
     request = Net::HTTP::Delete.new(@uri)
 
-
     response = Net::HTTP.start(@uri.hostname, @uri.port, @req_options) do |http|
       http.request(request)
     end
@@ -72,17 +71,22 @@ class HTTPClient
     @repeat_count.times do
       @thread_number.times do 
         threads << Thread.new do
-          res = Net::HTTP.start(@uri.hostname, @uri.port, @req_options) do |http|
-            http.request(request)
-          end
-          responses << res if @response == 'body'
-          responses << res.code if @response == 'status'
+          responses << execute_request(request)
         end
       end
 
       threads.each(&:join)
     end
     responses
+  end
+
+  def execute_request(request)
+    result = Net::HTTP.start(@uri.hostname, @uri.port, @req_options) do |http|
+      http.request(request)
+    end
+
+    result = result.code if @response == 'status'
+    result
   end
 
   def display_results(results)
@@ -139,5 +143,5 @@ if __FILE__ == $0
   my_exit unless valid_input?
 
   client = HTTPClient.new(ARGV[0], ARGV[1], ARGV[2], ARGV[3], ARGV[4], ARGV[5])
-  client.execute
+  client.run
 end
