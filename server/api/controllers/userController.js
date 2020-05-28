@@ -1,5 +1,5 @@
-var mongoose = require("mongoose"),
-  User = mongoose.model("Users");
+var mongoose = require("mongoose");
+var User = mongoose.model("Users");
 
 // get all users
 exports.all_users = function(req, res) {
