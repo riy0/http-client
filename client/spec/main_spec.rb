@@ -3,7 +3,7 @@ require_relative '../src/main'
 RSpec.describe HTTPClient do
   let(:url) { 'http://jsonplaceholder.typicode.com/posts' }
   let(:wrong_url) { 'http://jsonplaceholder.typicode.com/post' }
-  let(:delete_url) { 'http://jsonplaceholder.typicode.com/posts/1' }
+  let(:data_url) { 'http://jsonplaceholder.typicode.com/posts/1' }
 
   describe '#http_get_request' do
     context 'when execute proper url request' do
@@ -57,13 +57,29 @@ RSpec.describe HTTPClient do
         expect(client.post_request).to eq ['201', 1]
       end
     end
+
+    context 'when fail to post data' do
+      it 'with no post method' do
+        parameter = 'userId=1'
+        client = HTTPClient.new(url, 'post', parameter, 1, 1, 'status')
+        expect(client.post_request).to eq ['503', 1]
+      end
+    end
   end
 
   describe '#delete_request' do
     context 'when success delete data' do
       it 'with a correct url' do
-        client = HTTPClient.new(delete_url, 'delete', '', 1, 1, 'status')
+        client = HTTPClient.new(data_url, 'delete', '', 1, 1, 'status')
         expect(client.delete_request).to eq ['200', 1]
+      end
+    end
+
+    context 'when fail to delete data' do
+      it 'with no delete method' do
+        parameter = 'userId=1'
+        client = HTTPClient.new(url, 'delete', parameter, 1, 1, 'status')
+        expect(client.post_request).to eq ['503', 1]
       end
     end
   end
