@@ -2,10 +2,11 @@ require_relative '../src/main'
 
 RSpec.describe HTTPClient do
   let(:url) { 'http://jsonplaceholder.typicode.com/posts' }
-  let(:wrong_url) { 'http://jsonplaceholder.typicode.com/post' }
   let(:data_url) { 'http://jsonplaceholder.typicode.com/posts/1' }
 
   describe '#http_get_request' do
+    let(:wrong_url) { 'http://jsonplaceholder.typicode.com/post' }
+    
     context 'when execute proper url request' do
       it 'with a parameter status 200' do
         parameter = 'userId=1'
