@@ -1,0 +1,74 @@
+
+***********************************************************************
+❯ ruby main.rb 'http://localhost:3000/users' get '' 100 1 'status'
+run get request
+url: http://localhost:3000/users?
+thread: 100, iteration: 1 times
+
+status 200 : 100
+
+***********************************************************************
+❯ ruby main.rb 'http://localhost:3000/users' get '' 200 1 'status'
+run get request
+url: http://localhost:3000/users?
+thread: 200, iteration: 1 times
+
+status 200 : 200
+
+***********************************************************************
+> ruby main.rb 'http://localhost:3000/users' get '' 300 1 'status'
+run get request
+url: http://localhost:3000/users?
+thread: 300, iteration: 1 times
+
+status 200 : 300
+
+***********************************************************************
+❯ ruby main.rb 'http://localhost:3000/users' get '' 400 1 'status'
+run get request
+url: http://localhost:3000/users?
+thread: 400, iteration: 1 times
+
+status 200 : 400
+
+***********************************************************************
+❯ ruby main.rb 'http://localhost:3000/users' get '' 500 1 'status'
+run get request
+url: http://localhost:3000/users?
+thread: 500, iteration: 1 times
+
+status 200 : 500
+
+***********************************************************************
+❯ ruby main.rb 'http://localhost:3000/users' get '' 600 1 'status'
+run get request
+url: http://localhost:3000/users?
+thread: 600, iteration: 1 times
+
+status 200 : 600
+
+***********************************************************************
+> ruby main.rb 'http://localhost:3000/users' get '' 650 1 'status'
+run get request
+url: http://localhost:3000/users?
+thread: 650, iteration: 1 times
+
+status 200 : 650
+
+***********************************************************************
+> ruby main.rb 'http://localhost:3000/users' get '' 700 1 'status'
+#<Thread:0x00007fc929912b30@main.rb:70 run> terminated with exception (report_on_exception is true):
+
+***********************************************************************
+❯ ruby main.rb 'https://jsonplaceholder.typicode.com/posts/' get '' 675 1 'status'
+#<Thread:0x00007fc0df8e4368@main.rb:70 run> terminated with exception (report_on_exception is true):
+
+***********************************************************************
+❯ ruby main.rb 'https://jsonplaceholder.typicode.com/posts/' get '' 661 1 'status'
+run get request
+url: http://localhost:3000/users?
+thread: 661, iteration: 1 times
+
+***********************************************************************
+❯ ruby main.rb 'https://jsonplaceholder.typicode.com/posts/' get '' 662 1 'status'
+#<Thread:0x00007f8bf9e099a8@main.rb:70 run> terminated with exception (report_on_exception is true):
